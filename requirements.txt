@@ -1,0 +1,31 @@
+# Web framework
+fastapi
+uvicorn[standard]
+
+# Database
+supabase
+
+# Scraping
+requests
+beautifulsoup4
+lxml
+feedparser
+
+# Scheduling
+apscheduler
+
+# AI APIs
+google-genai
+groq
+
+# Utilities
+python-dotenv
+pydantic
+
+# Dashboard
+streamlit
+
+# Testing
+pytest
+pytest-asyncio
+httpx
