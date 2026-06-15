@@ -69,21 +69,15 @@ INSERT INTO keywords (word, category_id) SELECT 'web3',       id FROM categories
 INSERT INTO keywords (word, category_id) SELECT 'blockchain',  id FROM categories WHERE name='Web3';
 INSERT INTO keywords (word, category_id) SELECT 'layer 2',    id FROM categories WHERE name='Web3';
 INSERT INTO keywords (word, category_id) SELECT 'protocol',   id FROM categories WHERE name='Web3';
--- Add to Markets or Web3 to catch broad financial/macro news
-INSERT INTO keywords (word, category_id) SELECT 'says', id FROM categories WHERE name='Markets';
-INSERT INTO keywords (word, category_id) SELECT 'crypto', id FROM categories WHERE name='Markets';
+
+-- Broad catch-all keywords
+INSERT INTO keywords (word, category_id) SELECT 'says',    id FROM categories WHERE name='Markets';
+INSERT INTO keywords (word, category_id) SELECT 'crypto',  id FROM categories WHERE name='Markets';
 INSERT INTO keywords (word, category_id) SELECT 'warning', id FROM categories WHERE name='Markets';
-INSERT INTO keywords (word, category_id) SELECT 'news', id FROM categories WHERE name='Markets';
--- ─────────────────────────────────────────────────
--- SOURCES
--- ─────────────────────────────────────────────────
-INSERT INTO sources (name, url, is_active) VALUES
-  ('CoinTelegraph', 'https://cointelegraph.com',   TRUE),
-  ('Blockworks',    'https://blockworks.co/news',  TRUE)
-ON CONFLICT DO NOTHING;
+INSERT INTO keywords (word, category_id) SELECT 'news',    id FROM categories WHERE name='Markets';
 
 -- ─────────────────────────────────────────────────
--- CHANNELS (update telegram_id with your real channel usernames)
+-- CHANNELS (update telegram_id with your real channel IDs)
 -- ─────────────────────────────────────────────────
 INSERT INTO channels (telegram_id, name, is_active, source_filter) VALUES
   ('-1004429663293', 'CoinTelegraph News', TRUE, 'CoinTelegraph'),

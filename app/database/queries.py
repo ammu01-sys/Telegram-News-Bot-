@@ -69,3 +69,22 @@ def insert_log(event_type: str, message: str, article_id: str = None) -> None:
         db.table("logs").insert(payload).execute()
     except Exception as e:
         logger.error(f"Failed to write log: {e}")
+
+
+def upsert_source(name: str) -> bool:
+    """
+    Register a new article source in the sources table if it doesn't exist.
+    Returns True if inserted, False if already present.
+    """
+    if not name:
+        return False
+    try:
+        db = get_client()
+        db.table("sources").insert({"name": name, "type": "other"}).execute()
+        logger.info(f"New source registered: {name}")
+        return True
+    except Exception as e:
+        if "duplicate" in str(e).lower() or "unique" in str(e).lower():
+            return False  # already exists
+        logger.error(f"Source insert error: {e}")
+        return False

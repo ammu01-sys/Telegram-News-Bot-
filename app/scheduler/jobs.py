@@ -14,7 +14,7 @@ def run_pipeline() -> None:
         from app.scrapers.cointelegraph import CoinTelegraphScraper
         from app.scrapers.blockworks import BlockworksScraper
         from app.services.cleaner import clean_article
-        from app.database.queries import insert_article, get_all_keywords
+        from app.database.queries import insert_article, get_all_keywords, upsert_source
     
         # Fetch keywords ONCE — each entry has word, category_id, categories(name)
         keywords = get_all_keywords()
@@ -28,6 +28,11 @@ def run_pipeline() -> None:
     
             for raw in articles:
                 cleaned = clean_article(raw)
+    
+                # Register newly discovered article source in sources table
+                article_source = cleaned.get("article_source", "")
+                if article_source:
+                    upsert_source(article_source)
     
                 # Combine title + content, lowercase once
                 text = (cleaned["title"] + " " + cleaned["content"]).lower()
@@ -46,12 +51,13 @@ def run_pipeline() -> None:
                     )
     
                 payload = {
-                    "title":        cleaned["title"],
-                    "url":          cleaned["url"],
-                    "content":      cleaned["content"],
-                    "source_name":  cleaned["source_name"],
-                    "category_id":  category_id,
-                    "published_at": cleaned["published_at"],
+                    "title":          cleaned["title"],
+                    "url":            cleaned["url"],
+                    "content":        cleaned["content"],
+                    "source_name":    cleaned["source_name"],
+                    "article_source": cleaned.get("article_source", ""),
+                    "category_id":    category_id,
+                    "published_at":   cleaned["published_at"],
                 }
                 inserted = insert_article(payload)
                 if inserted:

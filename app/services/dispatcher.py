@@ -4,6 +4,7 @@ from app.database.queries import (
     mark_as_posted,
     insert_log,
 )
+from app.services.cleaner import _extract_source, _fetch_article_page
 from app.services.rephraser import rephrase
 from app.services.poster import post_to_telegram
 from app.utils.logger import logger
@@ -60,6 +61,19 @@ def run_dispatch() -> None:
                 article.get("id"),
             )
             continue
+
+        # Use stored article_source, or extract from content (with full page fetch)
+        if not article.get("article_source"):
+            article_source = _extract_source(
+                article.get("title", ""), article.get("content", "")
+            )
+            if not article_source and article.get("url"):
+                full_text = _fetch_article_page(article["url"])
+                if full_text:
+                    article_source = _extract_source(article.get("title", ""), full_text)
+            article["article_source"] = article_source
+
+        logger.info(f"Article source: '{article.get('article_source', '')}' for: {article['title'][:60]}")
 
         # Rephrase article
         summary = rephrase(

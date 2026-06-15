@@ -13,7 +13,8 @@ def post_to_telegram(article: dict, channel_id: str, summary: str) -> bool:
     Retries 3 times on failure.
     Returns True on success, False after all retries fail.
     """
-    message = _format_message(article["title"], summary, article["url"])
+    source = article.get("article_source", "")
+    message = _format_message(article["title"], summary, article["url"], source)
 
     for attempt in range(1, 4):  # 3 attempts
         try:
@@ -49,5 +50,6 @@ def post_to_telegram(article: dict, channel_id: str, summary: str) -> bool:
     return False
 
 
-def _format_message(title: str, summary: str, url: str) -> str:
-    return f"📰 <b>{title}</b>\n\n{summary}\n\n🔗 {url}"
+def _format_message(title: str, summary: str, url: str, source: str = "") -> str:
+    source_line = f"\n📌 <b>Source:</b> {source}" if source else ""
+    return f"📰 <b>{title}</b>{source_line}\n\n{summary}\n\n🔗 {url}"

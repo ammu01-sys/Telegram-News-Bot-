@@ -31,13 +31,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Telegram News Bot API", lifespan=lifespan)
 
-# Register API routes (Phase 4)
-from app.api.routes import sources, categories, keywords, channels, articles
+# Register API routes
+from app.api.routes import sources, categories, keywords, channels, articles, logs
 app.include_router(sources.router,    prefix="/sources",    tags=["Sources"])
 app.include_router(categories.router, prefix="/categories", tags=["Categories"])
 app.include_router(keywords.router,   prefix="/keywords",   tags=["Keywords"])
 app.include_router(channels.router,   prefix="/channels",   tags=["Channels"])
 app.include_router(articles.router,   prefix="/articles",   tags=["Articles"])
+app.include_router(logs.router,       prefix="/logs",       tags=["Logs"])
 
 
 @app.get("/")

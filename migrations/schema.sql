@@ -19,11 +19,13 @@ CREATE TABLE IF NOT EXISTS categories (
 
 -- ─────────────────────────────────────────────────
 -- TABLE: sources
+-- Stores the original sources/organizations behind articles
+-- (e.g. CertiK, Chainalysis, Binance) — NOT the publishing website
 -- ─────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS sources (
     id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name       TEXT NOT NULL,
-    url        TEXT NOT NULL,
+    name       TEXT UNIQUE NOT NULL,
+    type       TEXT,           -- 'research', 'exchange', 'protocol', 'media', 'government', 'other'
     is_active  BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -52,17 +54,20 @@ CREATE TABLE IF NOT EXISTS channels (
 
 -- ─────────────────────────────────────────────────
 -- TABLE: articles
+-- source_name = the publishing website (CoinTelegraph, Blockworks) used for channel routing
+-- article_source = the original content source (CertiK, Chainalysis, etc.) extracted from content
 -- ─────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS articles (
-    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title        TEXT NOT NULL,
-    url          TEXT UNIQUE NOT NULL,
-    content      TEXT,
-    source_name  TEXT,
-    category_id  UUID REFERENCES categories(id) ON DELETE SET NULL,
-    is_posted    BOOLEAN DEFAULT FALSE,
-    published_at TIMESTAMPTZ,
-    created_at   TIMESTAMPTZ DEFAULT now()
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title          TEXT NOT NULL,
+    url            TEXT UNIQUE NOT NULL,
+    content        TEXT,
+    source_name    TEXT,
+    article_source TEXT,
+    category_id    UUID REFERENCES categories(id) ON DELETE SET NULL,
+    is_posted      BOOLEAN DEFAULT FALSE,
+    published_at   TIMESTAMPTZ,
+    created_at     TIMESTAMPTZ DEFAULT now()
 );
 
 -- ─────────────────────────────────────────────────
@@ -79,10 +84,11 @@ CREATE TABLE IF NOT EXISTS logs (
 -- ─────────────────────────────────────────────────
 -- INDEXES (for fast filtering)
 -- ─────────────────────────────────────────────────
-CREATE INDEX IF NOT EXISTS idx_articles_is_posted    ON articles(is_posted);
-CREATE INDEX IF NOT EXISTS idx_articles_category_id  ON articles(category_id);
-CREATE INDEX IF NOT EXISTS idx_articles_published_at ON articles(published_at);
-CREATE INDEX IF NOT EXISTS idx_articles_source_name  ON articles(source_name);
-CREATE INDEX IF NOT EXISTS idx_logs_event_type       ON logs(event_type);
-CREATE INDEX IF NOT EXISTS idx_logs_created_at       ON logs(created_at);
-CREATE INDEX IF NOT EXISTS idx_keywords_category_id  ON keywords(category_id);
+CREATE INDEX IF NOT EXISTS idx_articles_is_posted       ON articles(is_posted);
+CREATE INDEX IF NOT EXISTS idx_articles_category_id     ON articles(category_id);
+CREATE INDEX IF NOT EXISTS idx_articles_published_at    ON articles(published_at);
+CREATE INDEX IF NOT EXISTS idx_articles_source_name     ON articles(source_name);
+CREATE INDEX IF NOT EXISTS idx_articles_article_source  ON articles(article_source);
+CREATE INDEX IF NOT EXISTS idx_logs_event_type          ON logs(event_type);
+CREATE INDEX IF NOT EXISTS idx_logs_created_at          ON logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_keywords_category_id     ON keywords(category_id);
