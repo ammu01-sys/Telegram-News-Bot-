@@ -10,12 +10,12 @@ class Classifier:
 
     Loads keyword\u2192category mappings from DB into memory.
     Classifies article content by checking if any keyword appears in the text.
-    Falls back to Uncategorized if no keyword matches.
+    Falls back to unknown if no keyword matches.
     """
 
     def __init__(self):
         self._keywords: list[dict] = []
-        self._uncategorized_id: int = 6
+        self._unknown_id: int = 5
         self.load_cache()
 
     def load_cache(self) -> None:
@@ -34,7 +34,7 @@ class Classifier:
         Longer keywords are matched first (more specific = higher priority).
         """
         if not content:
-            return self._uncategorized_id
+            return self._unknown_id
 
         content_lower = content.lower()
         sorted_kw = sorted(self._keywords, key=lambda k: len(k.get('word', '')), reverse=True)
@@ -46,7 +46,7 @@ class Classifier:
                 log.debug(f"Matched keyword '{word}' \u2192 category_id {category_id}")
                 return category_id
 
-        return self._uncategorized_id
+        return self._unknown_id
 
     def refresh(self) -> None:
         """Reload keyword cache from database."""

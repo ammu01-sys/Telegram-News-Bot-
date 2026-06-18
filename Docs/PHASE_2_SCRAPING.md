@@ -473,7 +473,7 @@ After running `python run_pipeline_test.py`:
 1. Check terminal output — articles should show `[inserted]` or `[duplicate/skipped]`
 2. Open Supabase → `articles` table → rows should be present
 3. Run again immediately → all rows should show `[duplicate/skipped]` (dedup working)
-4. Check `category_id` column — most should be filled, some may be NULL (Uncategorized)
+4. Check `category_id` column — most should be filled, some may be NULL (unknown)
 5. Check `logs` table → SCRAPE events should be logged
 
 ---

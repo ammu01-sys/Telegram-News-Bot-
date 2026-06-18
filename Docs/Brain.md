@@ -34,7 +34,7 @@
 [Deduplication]         → skips any URL already in DB
     ↓
 [Classification Layer]  → matches keywords → single category assigned
-    ↓                     if no match → log error, mark "Uncategorized"
+    ↓                     if no match → log error, mark "unknown"
 [Storage Layer]         → saves to Supabase (PostgreSQL)
     ↓
 [AI Rephrasing]         → Gemini first → Groq fallback → raw text fallback
@@ -366,7 +366,7 @@ An article is posted to a channel if ALL conditions are true:
 
 1. `article.is_posted = FALSE`
 2. `article.category_id IS NOT NULL`
-3. `article.category_name != 'Uncategorized'`
+3. `article.category_name != 'unknown'`
 4. Channel `is_active = TRUE`
 5. `article.source_name == channel.source_filter` ← **source must match channel**
 6. `article.published_at >= now() - 24 hours`
@@ -481,7 +481,7 @@ INSERT INTO channels (telegram_id, name, is_active, source_filter) VALUES
 ### Milestone 1
 - [ ] Both scrapers fetch articles published in last 24 hours only
 - [ ] Duplicate URLs are silently skipped, not re-inserted
-- [ ] Every article gets exactly one category (or "Uncategorized" with log)
+- [ ] Every article gets exactly one category (or "unknown" with log)
 - [ ] Admin can manage sources, categories, keywords, channels via Streamlit
 - [ ] FastAPI endpoints return correct filtered data
 

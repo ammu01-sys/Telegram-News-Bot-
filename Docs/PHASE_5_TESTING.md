@@ -295,8 +295,8 @@ class TestDispatcher:
                                 assert call_kwargs[1]["channel_id"] == "@ct_channel"
 
     def test_article_with_no_category_is_skipped(self):
-        uncategorized_articles = [{**MOCK_ARTICLES[0], "categories": {"name": "Uncategorized"}}]
-        with patch("app.services.dispatcher.get_unposted_articles", return_value=uncategorized_articles):
+        unknown_articles = [{**MOCK_ARTICLES[0], "categories": {"name": "unknown"}}]
+        with patch("app.services.dispatcher.get_unposted_articles", return_value=unknown_articles):
             with patch("app.services.dispatcher.get_active_channels", return_value=MOCK_CHANNELS):
                 with patch("app.services.dispatcher.post_to_telegram") as mock_post:
                     with patch("app.services.dispatcher.insert_log"):
@@ -332,7 +332,7 @@ class TestDispatcher:
 | Scraper returns 0 articles | Log warning "No articles in 24hrs", continue | `test_scrapers.py` |
 | Article URL already in DB | Silent skip, `insert_article` returns False | `test_pipeline.py` |
 | Article content has no keyword match | Log CLASSIFY, category_id = NULL | `test_classifier.py` |
-| Category is "Uncategorized" | Dispatcher skips article, logs reason | `test_dispatcher.py` |
+| Category is "unknown" | Dispatcher skips article, logs reason | `test_dispatcher.py` |
 | Article source has no matching channel | Log ERROR, article skipped | `test_dispatcher.py` |
 | Gemini API fails | Switch to Groq | `test_pipeline.py` |
 | Both Gemini and Groq fail | Use raw content[:300] as summary | `test_pipeline.py` |

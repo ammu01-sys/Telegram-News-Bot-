@@ -5,7 +5,7 @@ router = APIRouter()
 
 
 @router.get("/")
-def list_articles(limit: int = Query(default=100, le=500)):
+def list_articles(limit: int = Query(default=100, le=1000)):
     return get_all_articles(limit)
 
 

@@ -21,35 +21,23 @@ from ..utils.logger import get_logger
 
 log = get_logger(__name__)
 
-def escape_markdown(text: str) -> str:
-    """Escape Telegram MarkdownV2 special characters."""
-    escape_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
-    for char in escape_chars:
-        text = text.replace(char, f'\\{char}')
-    return text
-
-
-def escape_url_for_link(text: str) -> str:
-    """Escape only chars needed inside MarkdownV2 [text](url): \\ ( )"""
-    text = text.replace('\\', '\\\\')
-    text = text.replace(')', '\\)')
-    text = text.replace('(', '\\(')
+def escape_html(text: str) -> str:
+    """Escape HTML special characters for Telegram HTML parse mode."""
+    text = text.replace('&', '&amp;')
+    text = text.replace('<', '&lt;')
+    text = text.replace('>', '&gt;')
     return text
 
 
 def format_message(article: dict) -> str:
-    title = escape_markdown(str(article.get('title', '')))
-    content = escape_markdown(str(article.get('rephrased_content') or article.get('content', '')))
+    title = escape_html(str(article.get('title', '')))
+    content = escape_html(str(article.get('rephrased_content') or article.get('content', '')))
     url = str(article.get('url', ''))
-    category = escape_markdown(str(article.get('category_name', 'General')))
-    source = escape_markdown(str(article.get('source_name', 'News')))
-    escaped_url = escape_url_for_link(url)
 
     return (
-        f"📰 {title}\n\n"
+        f"<b>{title}</b>\n\n"
         f"{content}\n\n"
-        f"🏷 {category} · 📡 {source}\n"
-        f"🔗 [Read more]({escaped_url})"
+        f'<a href="{url}">Click here</a>'
     )
 
 
@@ -59,8 +47,8 @@ def get_target_channels(article: dict, all_channels: list) -> list:
 
     Rules:
     - Match article's category_id to a channel's category_id
-    - If no match, fallback to Uncategorized channel (category_id=6)
-    - If Uncategorized channel not found, return empty
+    - If no match, fallback to unknown channel (category_id=6)
+    - If unknown channel not found, return empty
     """
     article_category_id = article.get('category_id')
     article_id = article.get('id')
@@ -71,9 +59,9 @@ def get_target_channels(article: dict, all_channels: list) -> list:
             log.info(f"Article '{source_name}' (category_id={article_category_id}) -> '{ch['name']}'")
             return [ch]
 
-    # Fallback to Uncategorized
+    # Fallback to unknown
     for ch in all_channels:
-        if ch.get('category_id') == 6:
+        if ch.get('category_id') == 5:
             log.warning(f"No category match (category_id={article_category_id}), falling back to '{ch['name']}'")
             return [ch]
 
@@ -143,7 +131,7 @@ def _try_http_fallback(message: str, chat_id: str) -> dict:
         url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
         resp = requests.post(
             url,
-            data={'chat_id': chat_id, 'text': message, 'parse_mode': 'MarkdownV2'},
+            data={'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML', 'disable_web_page_preview': 'true'},
             proxies=proxies,
             timeout=30,
         )
@@ -173,9 +161,11 @@ async def _send_telegram(message: str, chat_id: str) -> bool:
             await bot.send_message(
                 chat_id=chat_id,
                 text=message,
+                parse_mode=ParseMode.HTML,
                 read_timeout=15,
                 write_timeout=15,
-                connect_timeout=15
+                connect_timeout=15,
+                disable_web_page_preview=True
             )
         log.info(f"Sent via direct connection to {chat_id}")
         return True
@@ -200,9 +190,11 @@ async def _send_telegram(message: str, chat_id: str) -> bool:
                 await bot.send_message(
                     chat_id=chat_id,
                     text=message,
+                    parse_mode=ParseMode.HTML,
                     read_timeout=15,
                     write_timeout=15,
-                    connect_timeout=15
+                    connect_timeout=15,
+                    disable_web_page_preview=True
                 )
             log.info(f"Sent via proxy {proxy} to {chat_id}")
             return True
@@ -232,7 +224,7 @@ def dispatch_all() -> dict:
     """
     Main dispatch function.
     Routes each article to the channel matching its category_id.
-    Falls back to Uncategorized channel if no match.
+    Falls back to unknown channel if no match.
     No duplicates. Skips test articles.
     """
     attempted = success = failed = skipped = 0

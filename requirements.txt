@@ -18,15 +18,19 @@ apscheduler
 google-genai
 groq
 
+# Telegram
+python-telegram-bot
+
 # Utilities
 python-dotenv
 pydantic
+httpx[socks]
 
 # Dashboard
 streamlit
 pandas
+plotly
 
 # Testing
 pytest
 pytest-asyncio
-httpx

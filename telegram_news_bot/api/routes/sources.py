@@ -15,14 +15,14 @@ router = APIRouter(
 # Pydantic models – include examples for Swagger UI
 # ----------------------------------------------------------------------
 class SourceCreate(BaseModel):
-    name: str = Field(..., example="BBC News")
-    url: str = Field(..., example="https://www.bbc.com/news")
-    is_active: bool = Field(True, example=True)
+    name: str = Field(..., examples=["BBC News"])
+    url: str = Field(..., examples=["https://www.bbc.com/news"])
+    is_active: bool = Field(True, examples=[True])
 
 class SourceUpdate(BaseModel):
-    name: Optional[str] = Field(None, example="CNN")
-    url: Optional[str] = Field(None, example="https://www.cnn.com")
-    is_active: Optional[bool] = Field(None, example=False)
+    name: Optional[str] = Field(None, examples=["CNN"])
+    url: Optional[str] = Field(None, examples=["https://www.cnn.com"])
+    is_active: Optional[bool] = Field(None, examples=[False])
 
 # ----------------------------------------------------------------------
 # CRUD endpoints
@@ -41,7 +41,7 @@ def list_sources():
     summary="Create a new source",
 )
 def create_source(
-    body: SourceCreate = Body(..., example={"name": "TechCrunch", "url": "https://techcrunch.com", "is_active": True})
+    body: SourceCreate = Body(..., examples=[{"name": "TechCrunch", "url": "https://techcrunch.com", "is_active": True}])
 ):
     try:
         resp = supabase.table("sources").insert(body.model_dump()).execute()
@@ -54,8 +54,8 @@ def create_source(
     summary="Update a source",
 )
 def update_source(
-    source_id: int = Path(..., description="ID of the source to update", example=1),
-    body: SourceUpdate = Body(..., example={"name": "Reuters", "is_active": False})
+    source_id: int = Path(..., description="ID of the source to update", examples=[1]),
+    body: SourceUpdate = Body(..., examples=[{"name": "Reuters", "is_active": False}])
 ):
     try:
         update_data = {k: v for k, v in body.model_dump().items() if v is not None}
@@ -77,7 +77,7 @@ def update_source(
     responses={status.HTTP_204_NO_CONTENT: {"description": "Source deleted"}},
 )
 def delete_source(
-    source_id: int = Path(..., description="ID of the source to delete", example=1)
+    source_id: int = Path(..., description="ID of the source to delete", examples=[1])
 ):
     try:
         resp = supabase.table("sources").delete().eq("id", source_id).execute()

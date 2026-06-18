@@ -242,7 +242,7 @@ def run_dispatch() -> None:
         category = article.get("categories", {})
         category_name = category.get("name") if isinstance(category, dict) else None
 
-        if not category_name or category_name == "Uncategorized":
+        if not category_name or category_name == "unknown":
             insert_log(
                 "ERROR",
                 f"Skipped — no valid category — title: {article['title'][:50]}",

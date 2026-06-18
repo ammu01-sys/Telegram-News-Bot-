@@ -10,16 +10,16 @@ router = APIRouter(
 )
 
 class ChannelCreate(BaseModel):
-    name: str = Field(..., example="Tech News")
-    telegram_chat_id: str = Field(..., example="-1001234567890")
-    category_id: Optional[int] = Field(None, example=2)
-    is_active: bool = Field(True, example=True)
+    name: str = Field(..., examples=["Tech News"])
+    telegram_chat_id: str = Field(..., examples=["-1001234567890"])
+    category_id: Optional[int] = Field(None, examples=[2])
+    is_active: bool = Field(True, examples=[True])
 
 class ChannelUpdate(BaseModel):
-    name: Optional[str] = Field(None, example="Finance Updates")
-    telegram_chat_id: Optional[str] = Field(None, example="-1009876543210")
-    category_id: Optional[int] = Field(None, example=3)
-    is_active: Optional[bool] = Field(None, example=False)
+    name: Optional[str] = Field(None, examples=["Finance Updates"])
+    telegram_chat_id: Optional[str] = Field(None, examples=["-1009876543210"])
+    category_id: Optional[int] = Field(None, examples=[3])
+    is_active: Optional[bool] = Field(None, examples=[False])
 
 @router.get(
     "/",
@@ -53,7 +53,7 @@ def create_channel(body: ChannelCreate = Body(...)):
     summary="Update an existing channel",
 )
 def update_channel(
-    channel_id: int = Path(..., description="Channel ID", example=1),
+    channel_id: int = Path(..., description="Channel ID", examples=[1]),
     body: ChannelUpdate = Body(...),
 ):
     try:
@@ -81,7 +81,7 @@ def update_channel(
     responses={status.HTTP_204_NO_CONTENT: {"description": "Channel deleted"}},
 )
 def delete_channel(
-    channel_id: int = Path(..., description="Channel ID", example=1)
+    channel_id: int = Path(..., description="Channel ID", examples=[1])
 ):
     try:
         resp = (

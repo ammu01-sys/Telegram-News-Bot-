@@ -10,12 +10,10 @@ router = APIRouter(
 )
 
 class CategoryCreate(BaseModel):
-    name: str = Field(..., example="Technology")
-    is_active: bool = Field(True, example=True)
+    name: str = Field(..., examples=["Tech News"])
 
 class CategoryUpdate(BaseModel):
-    name: Optional[str] = Field(None, example="Science")
-    is_active: Optional[bool] = Field(None, example=False)
+    name: Optional[str] = Field(None, examples=["Science"])
 
 @router.get("/", summary="List all categories")
 def list_categories():
@@ -42,7 +40,7 @@ def create_category(body: CategoryCreate = Body(...)):
     summary="Update an existing category",
 )
 def update_category(
-    category_id: int = Path(..., description="Category ID", example=1),
+    category_id: int = Path(..., description="Category ID", examples=[1]),
     body: CategoryUpdate = Body(...),
 ):
     try:
@@ -70,7 +68,7 @@ def update_category(
     responses={status.HTTP_204_NO_CONTENT: {"description": "Category deleted"}},
 )
 def delete_category(
-    category_id: int = Path(..., description="Category ID", example=1)
+    category_id: int = Path(..., description="Category ID", examples=[1])
 ):
     try:
         resp = (
@@ -95,7 +93,7 @@ def delete_category(
     summary="List keywords belonging to a category",
 )
 def list_category_keywords(
-    category_id: int = Path(..., description="Category ID", example=1)
+    category_id: int = Path(..., description="Category ID", examples=[1])
 ):
     try:
         resp = (

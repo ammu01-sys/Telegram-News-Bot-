@@ -1,85 +1,53 @@
 -- migrations/seed.sql
 -- Run this AFTER schema.sql in the Supabase SQL editor.
+-- Seeds keywords mapped to the 5 categories defined in schema.sql.
 
--- ─────────────────────────────────────────────────
--- CATEGORIES
--- ─────────────────────────────────────────────────
-INSERT INTO categories (name, description) VALUES
-  ('Bitcoin',    'Bitcoin and BTC-related news'),
-  ('Ethereum',   'Ethereum and ETH-related news'),
-  ('DeFi',       'Decentralized Finance news'),
-  ('NFT',        'Non-Fungible Token news'),
-  ('Regulation', 'Crypto regulation and legal news'),
-  ('Altcoin',    'Altcoin and general crypto news'),
-  ('Markets',    'Crypto market analysis and prices'),
-  ('Web3',       'Web3 and blockchain infrastructure news')
-ON CONFLICT (name) DO NOTHING;
+-- Global News
+INSERT INTO keywords (word, category_id) SELECT 'world',     id FROM categories WHERE name='Global News'
+UNION ALL SELECT 'global',    id FROM categories WHERE name='Global News'
+UNION ALL SELECT 'international', id FROM categories WHERE name='Global News'
+UNION ALL SELECT 'united nations', id FROM categories WHERE name='Global News'
+UNION ALL SELECT 'war',       id FROM categories WHERE name='Global News'
+UNION ALL SELECT 'conflict',  id FROM categories WHERE name='Global News'
+ON CONFLICT DO NOTHING;
 
--- ─────────────────────────────────────────────────
--- KEYWORDS → mapped to categories
--- ─────────────────────────────────────────────────
+-- Public Affairs
+INSERT INTO keywords (word, category_id) SELECT 'Public Affairs',  id FROM categories WHERE name='Public Affairs'
+UNION ALL SELECT 'election',  id FROM categories WHERE name='Public Affairs'
+UNION ALL SELECT 'president', id FROM categories WHERE name='Public Affairs'
+UNION ALL SELECT 'congress',  id FROM categories WHERE name='Public Affairs'
+UNION ALL SELECT 'democrat',  id FROM categories WHERE name='Public Affairs'
+UNION ALL SELECT 'republican', id FROM categories WHERE name='Public Affairs'
+UNION ALL SELECT 'policy',    id FROM categories WHERE name='Public Affairs'
+ON CONFLICT DO NOTHING;
 
--- Bitcoin
-INSERT INTO keywords (word, category_id) SELECT 'bitcoin',  id FROM categories WHERE name='Bitcoin';
-INSERT INTO keywords (word, category_id) SELECT 'btc',      id FROM categories WHERE name='Bitcoin';
-INSERT INTO keywords (word, category_id) SELECT 'satoshi',  id FROM categories WHERE name='Bitcoin';
-INSERT INTO keywords (word, category_id) SELECT 'halving',  id FROM categories WHERE name='Bitcoin';
+-- Tech News
+INSERT INTO keywords (word, category_id) SELECT 'Tech News', id FROM categories WHERE name='Tech News'
+UNION ALL SELECT 'ai',        id FROM categories WHERE name='Tech News'
+UNION ALL SELECT 'artificial intelligence', id FROM categories WHERE name='Tech News'
+UNION ALL SELECT 'software',  id FROM categories WHERE name='Tech News'
+UNION ALL SELECT 'startup',   id FROM categories WHERE name='Tech News'
+UNION ALL SELECT 'chip',      id FROM categories WHERE name='Tech News'
+UNION ALL SELECT 'cyber',     id FROM categories WHERE name='Tech News'
+UNION ALL SELECT 'blockchain', id FROM categories WHERE name='Tech News'
+UNION ALL SELECT 'crypto',    id FROM categories WHERE name='Tech News'
+ON CONFLICT DO NOTHING;
 
--- Ethereum
-INSERT INTO keywords (word, category_id) SELECT 'ethereum', id FROM categories WHERE name='Ethereum';
-INSERT INTO keywords (word, category_id) SELECT 'eth',      id FROM categories WHERE name='Ethereum';
-INSERT INTO keywords (word, category_id) SELECT 'solidity', id FROM categories WHERE name='Ethereum';
-INSERT INTO keywords (word, category_id) SELECT 'vitalik',  id FROM categories WHERE name='Ethereum';
+-- Economy
+INSERT INTO keywords (word, category_id) SELECT 'Economy',  id FROM categories WHERE name='Economy'
+UNION ALL SELECT 'stock',     id FROM categories WHERE name='Economy'
+UNION ALL SELECT 'market',    id FROM categories WHERE name='Economy'
+UNION ALL SELECT 'economy',   id FROM categories WHERE name='Economy'
+UNION ALL SELECT 'revenue',   id FROM categories WHERE name='Economy'
+UNION ALL SELECT 'earnings',  id FROM categories WHERE name='Economy'
+UNION ALL SELECT 'fed',       id FROM categories WHERE name='Economy'
+UNION ALL SELECT 'inflation', id FROM categories WHERE name='Economy'
+UNION ALL SELECT 'trade',     id FROM categories WHERE name='Economy'
+UNION ALL SELECT 'tariff',    id FROM categories WHERE name='Economy'
+ON CONFLICT DO NOTHING;
 
--- DeFi
-INSERT INTO keywords (word, category_id) SELECT 'defi',         id FROM categories WHERE name='DeFi';
-INSERT INTO keywords (word, category_id) SELECT 'uniswap',      id FROM categories WHERE name='DeFi';
-INSERT INTO keywords (word, category_id) SELECT 'lending',      id FROM categories WHERE name='DeFi';
-INSERT INTO keywords (word, category_id) SELECT 'yield',        id FROM categories WHERE name='DeFi';
-INSERT INTO keywords (word, category_id) SELECT 'liquidity',    id FROM categories WHERE name='DeFi';
-
--- NFT
-INSERT INTO keywords (word, category_id) SELECT 'nft',      id FROM categories WHERE name='NFT';
-INSERT INTO keywords (word, category_id) SELECT 'opensea',  id FROM categories WHERE name='NFT';
-INSERT INTO keywords (word, category_id) SELECT 'token',    id FROM categories WHERE name='NFT';
-
--- Regulation
-INSERT INTO keywords (word, category_id) SELECT 'sec',        id FROM categories WHERE name='Regulation';
-INSERT INTO keywords (word, category_id) SELECT 'regulation', id FROM categories WHERE name='Regulation';
-INSERT INTO keywords (word, category_id) SELECT 'lawsuit',    id FROM categories WHERE name='Regulation';
-INSERT INTO keywords (word, category_id) SELECT 'ban',        id FROM categories WHERE name='Regulation';
-INSERT INTO keywords (word, category_id) SELECT 'legal',      id FROM categories WHERE name='Regulation';
-
--- Altcoin
-INSERT INTO keywords (word, category_id) SELECT 'altcoin',  id FROM categories WHERE name='Altcoin';
-INSERT INTO keywords (word, category_id) SELECT 'solana',   id FROM categories WHERE name='Altcoin';
-INSERT INTO keywords (word, category_id) SELECT 'cardano',  id FROM categories WHERE name='Altcoin';
-INSERT INTO keywords (word, category_id) SELECT 'ripple',   id FROM categories WHERE name='Altcoin';
-INSERT INTO keywords (word, category_id) SELECT 'xrp',      id FROM categories WHERE name='Altcoin';
-
--- Markets
-INSERT INTO keywords (word, category_id) SELECT 'price',      id FROM categories WHERE name='Markets';
-INSERT INTO keywords (word, category_id) SELECT 'market cap', id FROM categories WHERE name='Markets';
-INSERT INTO keywords (word, category_id) SELECT 'bull',       id FROM categories WHERE name='Markets';
-INSERT INTO keywords (word, category_id) SELECT 'bear',       id FROM categories WHERE name='Markets';
-INSERT INTO keywords (word, category_id) SELECT 'rally',      id FROM categories WHERE name='Markets';
-
--- Web3
-INSERT INTO keywords (word, category_id) SELECT 'web3',       id FROM categories WHERE name='Web3';
-INSERT INTO keywords (word, category_id) SELECT 'blockchain',  id FROM categories WHERE name='Web3';
-INSERT INTO keywords (word, category_id) SELECT 'layer 2',    id FROM categories WHERE name='Web3';
-INSERT INTO keywords (word, category_id) SELECT 'protocol',   id FROM categories WHERE name='Web3';
-
--- Broad catch-all keywords
-INSERT INTO keywords (word, category_id) SELECT 'says',    id FROM categories WHERE name='Markets';
-INSERT INTO keywords (word, category_id) SELECT 'crypto',  id FROM categories WHERE name='Markets';
-INSERT INTO keywords (word, category_id) SELECT 'warning', id FROM categories WHERE name='Markets';
-INSERT INTO keywords (word, category_id) SELECT 'news',    id FROM categories WHERE name='Markets';
-
--- ─────────────────────────────────────────────────
--- CHANNELS (update telegram_id with your real channel IDs)
--- ─────────────────────────────────────────────────
-INSERT INTO channels (telegram_id, name, is_active, source_filter) VALUES
-  ('-1004429663293', 'CoinTelegraph News', TRUE, 'CoinTelegraph'),
-  ('-1004423446478', 'BlockWorks News',    TRUE, 'Blockworks')
+-- Broad catch-all → unknown
+INSERT INTO keywords (word, category_id) SELECT 'breaking',  id FROM categories WHERE name='unknown'
+UNION ALL SELECT 'says',      id FROM categories WHERE name='unknown'
+UNION ALL SELECT 'news',      id FROM categories WHERE name='unknown'
 ON CONFLICT DO NOTHING;

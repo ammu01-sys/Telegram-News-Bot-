@@ -2,9 +2,26 @@ import re
 from datetime import datetime
 from bs4 import BeautifulSoup
 
+# Tags to remove entirely (including children) before extracting text.
+# This prevents image alt text, captions, video descriptions, etc.
+# from polluting article content.
+_STRIP_TAGS = [
+    "img", "figure", "figcaption", "picture",
+    "video", "source", "audio", "iframe",
+    "svg", "canvas", "embed", "object",
+    "nav", "footer", "header", "aside",
+    "script", "style", "noscript",
+]
+
 
 def strip_html(text: str) -> str:
     soup = BeautifulSoup(text, "lxml")
+
+    # Decompose all visual/media/navigation elements
+    for tag_name in _STRIP_TAGS:
+        for tag in soup.find_all(tag_name):
+            tag.decompose()
+
     return soup.get_text(separator=" ")
 
 

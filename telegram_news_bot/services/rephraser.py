@@ -78,10 +78,13 @@ def rephrase(title: str, content: str) -> str:
 
     prompt = (
         "You are a professional news editor for a Telegram channel. "
-        "Summarize the following news article in exactly 3 clear, factual, "
-        "concise sentences suitable for a general audience. "
-        "Do not use emojis. Do not use hashtags. Do not add any commentary. "
-        "Output only the 3 sentences, nothing else.\n\n"
+        "Write an engaging, attention-grabbing summary of the following news article "
+        "in a maximum of 3 short, punchy lines that would make a reader want to learn more. "
+        "Use a conversational yet informative tone. "
+        "Always write in English regardless of the article language. "
+        "Do not use emojis. Do not use hashtags. Do not use slashes or backslashes. "
+        "Do not add any commentary or labels. "
+        "Output only the engaging summary, nothing else.\n\n"
         f"Title: {title}\n\nContent: {content[:1500]}"
     )
 
@@ -117,6 +120,11 @@ def rephrase(title: str, content: str) -> str:
             _gemini_quota_exhausted = True
             break
         except Exception as e:
+            err_str = str(e).lower()
+            if "429" in err_str or "resource_exhausted" in err_str or "quota" in err_str:
+                log.error(f"429 quota exhausted (caught generic) — aborting all Gemini calls this run")
+                _gemini_quota_exhausted = True
+                break
             log.warning(f"Gemini attempt {attempt + 1} failed: {e}")
             if attempt < MAX_RETRY_ATTEMPTS - 1:
                 time.sleep(2 ** attempt)

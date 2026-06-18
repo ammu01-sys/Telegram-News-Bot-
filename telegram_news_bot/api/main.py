@@ -1,7 +1,7 @@
 from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routes import sources, categories, keywords, channels, articles
+from .routes import sources, categories, keywords, channels, articles, logs
 
 app = FastAPI(title="Telegram News Bot API", version="1.0.0")
 
@@ -24,8 +24,9 @@ def root():
     return {"message": "Telegram News Bot API", "docs": "/docs"}
 
 
-app.include_router(sources.router, prefix="/api/v1/sources", tags=["sources"])
-app.include_router(categories.router, prefix="/api/v1/categories", tags=["categories"])
-app.include_router(keywords.router, prefix="/api/v1/keywords", tags=["keywords"])
-app.include_router(channels.router, prefix="/api/v1/channels", tags=["channels"])
-app.include_router(articles.router, prefix="/api/v1/articles", tags=["articles"])
+app.include_router(sources.router, prefix="/sources", tags=["sources"])
+app.include_router(categories.router, prefix="/categories", tags=["categories"])
+app.include_router(keywords.router, prefix="/keywords", tags=["keywords"])
+app.include_router(channels.router, prefix="/channels", tags=["channels"])
+app.include_router(articles.router, prefix="/articles", tags=["articles"])
+app.include_router(logs.router, prefix="/logs", tags=["logs"])

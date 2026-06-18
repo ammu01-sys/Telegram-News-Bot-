@@ -17,7 +17,7 @@ _streamlit_proc = None
 def run_streamlit():
     global _streamlit_proc
     try:
-        dashboard_path = Path(__file__).resolve().parent / "telegram_news_bot" / "dashboard" / "app.py"
+        dashboard_path = Path(__file__).resolve().parent / "dashboard" / "streamlit_app.py"
         _streamlit_proc = subprocess.Popen(
             [sys.executable, "-m", "streamlit", "run", str(dashboard_path),
              "--server.port", "8501", "--server.headless", "true"],

@@ -10,12 +10,12 @@ router = APIRouter(
 )
 
 class KeywordCreate(BaseModel):
-    word: str = Field(..., example="blockchain")
-    category_id: int = Field(..., example=2)
+    word: str = Field(..., examples=["blockchain"])
+    category_id: int = Field(..., examples=[2])
 
 class KeywordUpdate(BaseModel):
-    word: Optional[str] = Field(None, example="crypto")
-    category_id: Optional[int] = Field(None, example=3)
+    word: Optional[str] = Field(None, examples=["crypto"])
+    category_id: Optional[int] = Field(None, examples=[3])
 
 @router.get(
     "/",
@@ -49,7 +49,7 @@ def create_keyword(body: KeywordCreate = Body(...)):
     summary="Update an existing keyword",
 )
 def update_keyword(
-    keyword_id: int = Path(..., description="Keyword ID", example=1),
+    keyword_id: int = Path(..., description="Keyword ID", examples=[1]),
     body: KeywordUpdate = Body(...),
 ):
     try:
@@ -77,7 +77,7 @@ def update_keyword(
     responses={status.HTTP_204_NO_CONTENT: {"description": "Keyword deleted"}},
 )
 def delete_keyword(
-    keyword_id: int = Path(..., description="Keyword ID", example=1)
+    keyword_id: int = Path(..., description="Keyword ID", examples=[1])
 ):
     try:
         resp = (

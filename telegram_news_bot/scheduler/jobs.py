@@ -3,7 +3,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from ..utils.config import SCRAPE_INTERVAL_MINUTES
 from ..utils.logger import get_logger
-from ..scrapers import cointelegraph, blockworks, cnbc, medicalnewstoday
+from ..scrapers import cointelegraph, cnbc
 from ..services.cleaner import clean_article
 from ..services.classifier import classify, classifier as clf
 from ..services.dispatcher import dispatch_all
@@ -37,9 +37,7 @@ def run_pipeline() -> None:
 
         scrapers = [
             ("CoinTelegraph", cointelegraph.scrape),
-            ("Blockworks", blockworks.scrape),
             ("CNBC", cnbc.scrape),
-            ("Medical News Today", medicalnewstoday.scrape),
         ]
 
         for source_name, scrape_func in scrapers:

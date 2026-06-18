@@ -68,8 +68,16 @@ def extract_category(row: dict) -> str:
     """Safely extract category name from a joined article row."""
     cat = row.get("categories")
     if isinstance(cat, dict):
-        return cat.get("name", "—")
-    return "—"
+        return cat.get("name", "\u2014")
+    return "\u2014"
+
+
+def extract_source(row: dict) -> str:
+    """Safely extract source name from a joined article row."""
+    src = row.get("sources")
+    if isinstance(src, dict):
+        return src.get("name", "\u2014")
+    return row.get("source_name", "\u2014")
 
 
 # ══════════════════════════════════════════════════
@@ -80,7 +88,7 @@ if page == "📊 Overview":
 
     articles = api_get("/articles/?limit=1000")
     total = len(articles)
-    posted = sum(1 for a in articles if a.get("is_posted"))
+    posted = sum(1 for a in articles if a.get("status") == "posted")
     unposted = total - posted
 
     col1, col2, col3 = st.columns(3)
@@ -93,13 +101,14 @@ if page == "📊 Overview":
     if articles:
         df = pd.DataFrame(articles[:20])
         df["category"] = df.apply(extract_category, axis=1)
-        display_cols = [c for c in ["title", "source_name", "category", "is_posted", "published_at"] if c in df.columns]
+        df["source"] = df.apply(extract_source, axis=1)
+        display_cols = [c for c in ["title", "source", "category", "status", "scraped_at"] if c in df.columns]
         df = df[display_cols].rename(columns={
             "title": "Title",
-            "source_name": "Source",
+            "source": "Source",
             "category": "Category",
-            "is_posted": "Posted",
-            "published_at": "Published At",
+            "status": "Status",
+            "scraped_at": "Scraped At",
         })
         st.dataframe(df, use_container_width=True)
     else:
@@ -115,33 +124,35 @@ elif page == "📰 Articles":
     with col1:
         source_filter = st.selectbox("Filter by source", ["All", "CoinTelegraph", "Blockworks"])
     with col2:
-        posted_filter = st.selectbox("Filter by status", ["All", "Posted", "Not Posted"])
+        posted_filter = st.selectbox("Filter by status", ["All", "posted", "classified", "failed"])
     with col3:
         limit = st.number_input("Limit", min_value=10, max_value=500, value=100)
 
     params = f"?limit={limit}"
-    if source_filter != "All":
-        params += f"&source={source_filter}"
-    if posted_filter == "Posted":
-        params += "&is_posted=true"
-    elif posted_filter == "Not Posted":
-        params += "&is_posted=false"
+    if posted_filter != "All":
+        params += f"&status={posted_filter}"
 
     articles = api_get(f"/articles/{params}")
 
     if articles:
         df = pd.DataFrame(articles)
         df["category"] = df.apply(extract_category, axis=1)
-        display_cols = [c for c in ["title", "source_name", "category", "is_posted", "published_at"] if c in df.columns]
+        df["source"] = df.apply(extract_source, axis=1)
+
+        # Client-side source filter
+        if source_filter != "All":
+            df = df[df["source"] == source_filter]
+
+        display_cols = [c for c in ["title", "source", "category", "status", "scraped_at"] if c in df.columns]
         df = df[display_cols].rename(columns={
             "title": "Title",
-            "source_name": "Source",
+            "source": "Source",
             "category": "Category",
-            "is_posted": "Posted",
-            "published_at": "Published At",
+            "status": "Status",
+            "scraped_at": "Scraped At",
         })
         st.dataframe(df, use_container_width=True)
-        st.caption(f"{len(articles)} articles shown")
+        st.caption(f"{len(df)} articles shown")
     else:
         st.info("No articles found.")
 
@@ -151,14 +162,15 @@ elif page == "📰 Articles":
 elif page == "📤 Posting History":
     st.title("📤 Posting History")
 
-    logs = api_get("/logs/?event_type=POST&limit=200")
+    logs = api_get("/logs/?event_type=success&limit=200")
 
     if logs:
         df = pd.DataFrame(logs)
-        display_cols = [c for c in ["created_at", "message", "article_id"] if c in df.columns]
+        display_cols = [c for c in ["posted_at", "status", "error", "article_id"] if c in df.columns]
         df = df[display_cols].rename(columns={
-            "created_at": "Timestamp",
-            "message": "Result",
+            "posted_at": "Timestamp",
+            "status": "Result",
+            "error": "Error",
             "article_id": "Article ID",
         })
         st.dataframe(df, use_container_width=True)
@@ -172,10 +184,10 @@ elif page == "📤 Posting History":
 elif page == "📋 Logs":
     st.title("📋 System Logs")
 
-    event_types = ["ALL", "SCRAPE", "POST", "ERROR", "CLASSIFY", "AI"]
+    event_types = ["ALL", "success", "failed"]
     col1, col2 = st.columns([1, 3])
     with col1:
-        selected = st.selectbox("Event type", event_types)
+        selected = st.selectbox("Status", event_types)
     with col2:
         limit = st.number_input("Limit", min_value=50, max_value=2000, value=300)
 
@@ -187,17 +199,18 @@ elif page == "📋 Logs":
 
     if logs:
         df = pd.DataFrame(logs)
-        display_cols = [c for c in ["created_at", "event_type", "message"] if c in df.columns]
+        display_cols = [c for c in ["posted_at", "status", "error", "retry_count"] if c in df.columns]
         df = df[display_cols]
 
-        event_icons = {"ERROR": "🔴", "POST": "🟢", "SCRAPE": "🔵", "AI": "🟡", "CLASSIFY": "🟠"}
-        df["event_type"] = df["event_type"].apply(
+        event_icons = {"failed": "🔴", "success": "🟢"}
+        df["status"] = df["status"].apply(
             lambda v: f"{event_icons.get(v, '⚪')} {v}"
         )
         df = df.rename(columns={
-            "created_at": "Timestamp",
-            "event_type": "Event",
-            "message": "Message",
+            "posted_at": "Timestamp",
+            "status": "Status",
+            "error": "Error",
+            "retry_count": "Retries",
         })
         st.dataframe(df, use_container_width=True)
         st.caption(f"{len(logs)} log entries")
@@ -213,23 +226,9 @@ elif page == "🌐 Sources":
 
     if sources:
         df = pd.DataFrame(sources)
-        display_cols = [c for c in ["name", "type", "is_active"] if c in df.columns]
+        display_cols = [c for c in ["name", "url", "is_active"] if c in df.columns]
         st.dataframe(df[display_cols], use_container_width=True)
         st.caption(f"{len(sources)} sources")
-
-    st.divider()
-    st.subheader("Add Source")
-    with st.form("add_source"):
-        name = st.text_input("Source name (e.g. CertiK, Chainalysis)")
-        src_type = st.selectbox("Type", ["research", "exchange", "protocol", "media", "government", "other"])
-        active = st.checkbox("Active", value=True)
-        if st.form_submit_button("Add"):
-            if name:
-                api_post("/sources/", {"name": name, "type": src_type, "is_active": active})
-                st.success(f"Source '{name}' added")
-                st.rerun()
-            else:
-                st.warning("Source name is required.")
 
 # ══════════════════════════════════════════════════
 # PAGE: Categories
@@ -242,19 +241,6 @@ elif page == "🏷️ Categories":
         df = pd.DataFrame(cats)
         display_cols = [c for c in ["name", "description"] if c in df.columns]
         st.dataframe(df[display_cols], use_container_width=True)
-
-    st.divider()
-    st.subheader("Add Category")
-    with st.form("add_cat"):
-        name = st.text_input("Category name")
-        desc = st.text_input("Description (optional)")
-        if st.form_submit_button("Add"):
-            if name:
-                api_post("/categories/", {"name": name, "description": desc or None})
-                st.success(f"Category '{name}' added")
-                st.rerun()
-            else:
-                st.warning("Category name is required.")
 
 # ══════════════════════════════════════════════════
 # PAGE: Keywords
@@ -273,33 +259,6 @@ elif page == "🔑 Keywords":
         st.dataframe(df[["word", "category"]], use_container_width=True)
         st.caption(f"{len(keywords)} keywords")
 
-        st.subheader("Delete Keyword")
-        kw_options = {
-            f"{k['word']} ({k.get('categories', {}).get('name', '?') if isinstance(k.get('categories'), dict) else '?'})": k["id"]
-            for k in keywords
-        }
-        to_delete = st.selectbox("Select keyword to delete", list(kw_options.keys()))
-        if st.button("Delete selected keyword"):
-            api_delete(f"/keywords/{kw_options[to_delete]}")
-            st.success("Keyword deleted")
-            st.rerun()
-
-    st.divider()
-    st.subheader("Add Keyword")
-    with st.form("add_kw"):
-        word = st.text_input("Keyword (e.g. bitcoin)")
-        if cat_map:
-            cat_sel = st.selectbox("Category", list(cat_map.keys()))
-            if st.form_submit_button("Add"):
-                if word and cat_sel:
-                    api_post("/keywords/", {"word": word.lower().strip(), "category_id": cat_map[cat_sel]})
-                    st.success(f"Keyword '{word}' added")
-                    st.rerun()
-                else:
-                    st.warning("Keyword and category are required.")
-        else:
-            st.warning("No categories found. Add categories first.")
-
 # ══════════════════════════════════════════════════
 # PAGE: Channels
 # ══════════════════════════════════════════════════
@@ -309,25 +268,5 @@ elif page == "📡 Channels":
 
     if channels:
         df = pd.DataFrame(channels)
-        display_cols = [c for c in ["name", "telegram_id", "source_filter", "is_active"] if c in df.columns]
+        display_cols = [c for c in ["name", "telegram_chat_id", "is_active"] if c in df.columns]
         st.dataframe(df[display_cols], use_container_width=True)
-
-    st.divider()
-    st.subheader("Add Channel")
-    with st.form("add_ch"):
-        tg_id = st.text_input("Telegram Channel ID (e.g. -1001234567890 or @my_channel)")
-        name = st.text_input("Display Name")
-        src = st.selectbox("Source Filter", ["CoinTelegraph", "Blockworks"])
-        active = st.checkbox("Active", value=True)
-        if st.form_submit_button("Add"):
-            if tg_id:
-                api_post("/channels/", {
-                    "telegram_id": tg_id,
-                    "name": name or None,
-                    "source_filter": src,
-                    "is_active": active,
-                })
-                st.success(f"Channel '{tg_id}' added")
-                st.rerun()
-            else:
-                st.warning("Telegram ID is required.")

@@ -12,6 +12,11 @@ def fetch_content(url: str, headers: dict) -> tuple[str, BeautifulSoup | None]:
     try:
         res = requests.get(url, headers=headers, timeout=30)
         soup = BeautifulSoup(res.text, "lxml")
+
+        # Remove images, figures, captions, and media elements
+        for tag in soup.find_all(["img", "figure", "figcaption", "picture", "video", "svg"]):
+            tag.decompose()
+
         # Try multiple content selectors
         selectors = [
             "div.post-content p",

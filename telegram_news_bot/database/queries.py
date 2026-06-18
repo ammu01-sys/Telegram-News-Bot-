@@ -171,7 +171,7 @@ def log_post_attempt(
                 "article_id": article_id,
                 "channel_id": channel_pk,
                 "status": status,
-                "error_message": error,
+                "error": error,
                 "retry_count": retry_count,
             }
         )
